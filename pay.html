@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Payment details</title>
+<style>
+  :root{--bg:#FFFFFF;--ink:#111827;--ac:#2563EB;--ac-ink:#ffffff;--line:color-mix(in srgb,var(--ink) 22%,transparent)}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+  main{width:100%;max-width:440px}
+  h1{font-size:1.7rem;line-height:1.15;margin:8px 0 4px;overflow-wrap:anywhere}
+  .sub{margin:0 0 20px;opacity:.8;font-size:.95rem}
+  .row{border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .label{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin-bottom:4px}
+  .value{font-size:1.35rem;font-weight:700;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;margin-bottom:10px}
+  button{width:100%;font:inherit;font-weight:700;padding:12px;border-radius:10px;cursor:pointer;
+    border:0;background:var(--ac);color:var(--ac-ink)}
+  button:active{transform:translateY(1px)}
+  button.done{background:var(--ink);color:var(--bg)}
+  .note{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;overflow-wrap:anywhere}
+  .warn{font-size:.82rem;opacity:.85;margin-top:22px;line-height:1.45}
+  .warn strong{display:block;margin-bottom:2px}
+  .empty{border:1.5px solid var(--line);border-radius:14px;padding:18px;text-align:center}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<script>
+(function(){
+  var HEX=/^[0-9a-f]{6}$/i;
+  var app=document.getElementById('app');
+
+  function lum(h){
+    var c=[0,2,4].map(function(i){
+      var v=parseInt(h.substr(i,2),16)/255;
+      return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+    });
+    return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
+  }
+  function readable(bg){return lum(bg)>0.4?'#2b1608':'#ffffff';}
+
+  function el(tag,cls,text){
+    var e=document.createElement(tag);
+    if(cls)e.className=cls;
+    if(text!==undefined)e.textContent=text;
+    return e;
+  }
+
+  function copy(text,btn,idle){
+    function ok(){
+      btn.textContent='Copied ✓';btn.classList.add('done');
+      setTimeout(function(){btn.textContent=idle;btn.classList.remove('done');},1600);
+    }
+    function fallback(){
+      var ta=document.createElement('textarea');
+      ta.value=text;ta.setAttribute('readonly','');
+      ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');ok();}catch(e){btn.textContent='Press and hold the number to copy';}
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard&&window.isSecureContext){
+      navigator.clipboard.writeText(text).then(ok,fallback);
+    }else{fallback();}
+  }
+
+  function field(label,value,btnText){
+    var row=el('div','row');
+    row.appendChild(el('div','label',label));
+    row.appendChild(el('div','value',value));
+    var b=el('button',null,btnText);
+    b.type='button';
+    b.addEventListener('click',function(){copy(value,b,btnText);});
+    row.appendChild(b);
+    return row;
+  }
+
+  function render(){
+    var p=new URLSearchParams(location.hash.replace(/^#/,''));
+    var t=(p.get('t')||'').slice(0,80);
+    var n=(p.get('n')||'').slice(0,80);
+    var a=(p.get('a')||'').slice(0,40);
+    var b=(p.get('b')||'').slice(0,60);
+    var r=(p.get('r')||'').slice(0,140);
+
+    var cs=(p.get('c')||'').split('-');
+    var root=document.documentElement.style;
+    if(cs.length===3&&cs.every(function(x){return HEX.test(x);})){
+      root.setProperty('--bg','#'+cs[0]);
+      root.setProperty('--ink','#'+cs[1]);
+      root.setProperty('--ac','#'+cs[2]);
+      root.setProperty('--ac-ink',readable(cs[2]));
+    }
+
+    app.textContent='';
+    if(!n||!a){
+      var e=el('div','empty');
+      e.appendChild(el('strong',null,'No payment details in this link'));
+      e.appendChild(el('p',null,'Ask the seller for their QR code again.'));
+      app.appendChild(e);
+      return;
+    }
+    document.title=(t||n)+' – payment details';
+    app.appendChild(el('h1',null,t||'Payment details'));
+    app.appendChild(el('p','sub','Bank transfer. Tap to copy, then paste into your banking app.'));
+    app.appendChild(field('Account name',n,'Copy name'));
+    app.appendChild(field('Account number',a,'Copy account number'));
+    if(b)app.appendChild(field('Bank',b,'Copy bank'));
+    if(r){
+      var note=el('div','note');
+      note.appendChild(el('div','label','Reference / note'));
+      note.appendChild(el('div',null,r));
+      app.appendChild(note);
+    }
+    var w=el('div','warn');
+    w.appendChild(el('strong',null,'Check before you send'));
+    w.appendChild(document.createTextNode('Make sure the account name matches who you’re paying. This page only shows what was typed into the link, and nobody has verified it.'));
+    app.appendChild(w);
+  }
+
+  window.addEventListener('hashchange',render);
+  render();
+})();
+</script>
+</body>
+</html>
