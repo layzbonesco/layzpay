@@ -27,7 +27,19 @@
   .notice{font-size:.9rem;border:1.5px solid var(--brown);border-radius:12px;padding:10px 12px;margin:0 0 16px;background:rgba(255,255,255,.55)}
   .req{color:#a3141f;font-weight:700}
   .bad{color:#a3141f;font-weight:700}
-  iframe{width:100%;height:520px;border:1.5px solid #cfd4dc;border-radius:14px;background:#f4f4f2}
+  .pvwrap{background:#f4f4f2;border:1.5px solid #cfd4dc;border-radius:14px;padding:22px 14px;color:#111;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .pv-card{background:#fff;border-radius:14px;padding:28px 22px;max-width:380px;margin:0 auto;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}
+  .pv-h1{font-size:20px;font-weight:700;margin:0 0 4px;overflow-wrap:anywhere;color:#111}
+  .pv-h2{font-size:13px;color:#888;font-weight:500;margin:0 0 22px;text-transform:uppercase;letter-spacing:.5px}
+  .pv-field{margin-bottom:16px;text-align:left}
+  .pv-label{font-size:12px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .pv-row{display:flex;align-items:center;gap:8px;background:#f7f7f5;border-radius:10px;padding:12px 14px}
+  .pv-value{font-size:17px;font-weight:700;flex:1;word-break:break-all;color:#111}
+  .pv-btn{background:#1a1a1a;color:#fff;border:none;border-radius:7px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:inherit}
+  .pv-btn.copied{background:#16a34a}
+  .pv-note{font-size:12px;color:#999;margin:18px 0 0;line-height:1.5;overflow-wrap:anywhere}
+  .pv-note.small{margin-top:8px}
   canvas{width:100%;height:auto;border:1.5px solid #cfd4dc;border-radius:14px;display:block;background:#fff}
   details{margin-top:12px}
   summary{cursor:pointer;font-weight:700}
@@ -97,7 +109,7 @@ window.addEventListener('error',function(e){
   <div id="results" style="display:none">
   <div class="card">
     <h2>What people see when they scan</h2>
-    <iframe id="preview" title="Preview of the payment page"></iframe>
+    <div id="preview" class="pvwrap" role="img" aria-label="Preview of the payment page"></div>
   </div>
 
   <div class="card">
@@ -2459,6 +2471,32 @@ var qrcode = function() {
   f.base.value=defBase;
   if(!defBase){$('nobase').style.display='block';f.base.placeholder='https://your-site.github.io/pay/pay.html';document.querySelector('details').open=true;}else{document.querySelector('details').style.display='none';}
 
+
+  function mk(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+  function copyText(text,btn){
+    function ok(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},1500);}
+    function fb(){var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok();}catch(e){btn.textContent='Long-press to copy';}document.body.removeChild(ta);}
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(ok,fb);}else{fb();}
+  }
+  function renderPreview(){
+    var box=$('preview');box.textContent='';
+    var t=f.t.value.trim(),n=f.n.value.trim(),a=f.a.value.trim(),r=f.r.value.trim(),m=f.m.value.trim();
+    var card=mk('div','pv-card');
+    if(t)card.appendChild(mk('div','pv-h1',t));
+    card.appendChild(mk('div','pv-h2','Account Details'));
+    function row(label,val){
+      var fl=mk('div','pv-field');fl.appendChild(mk('div','pv-label',label));
+      var rw=mk('div','pv-row');rw.appendChild(mk('div','pv-value',val));
+      var b=mk('button','pv-btn','Copy');b.type='button';b.addEventListener('click',function(){copyText(val,b);});
+      rw.appendChild(b);fl.appendChild(rw);card.appendChild(fl);
+    }
+    row('Account Name',n);row('Account Number',a);if(r)row('Reference',r);
+    card.appendChild(mk('p','pv-note',m||('Pay by bank transfer using the account name and number above'+(r?', with \u201c'+r+'\u201d as the reference.':'.'))));
+    card.appendChild(mk('p','pv-note small','Check the account name matches who you mean to pay.'));
+    box.appendChild(card);
+  }
+
   function buildLink(){
     var p=new URLSearchParams();
     p.set('v','1');
@@ -2505,11 +2543,7 @@ var qrcode = function() {
     $('results').style.display=ready?'':'none';
     $('placeholder').style.display=ready?'none':'';
     if(!ready){updateSheets();return;}
-    var ifr=$('preview');
-    if(!f.base.value.trim()){ifr.removeAttribute('src');}else{
-      if(ifr.getAttribute('data-base')!==f.base.value){ifr.setAttribute('data-base',f.base.value);ifr.src=url;}
-      else{try{ifr.contentWindow.location.hash=url.split('#')[1];}catch(e){ifr.src=url;}}
-    }
+    renderPreview();
     updateSheets();
     clearTimeout(timer);
     timer=setTimeout(function(){
