@@ -106,7 +106,7 @@
     }
     document.title=(t||n)+' – payment details';
     app.appendChild(el('h1',null,t||'Payment details'));
-    app.appendChild(el('p','sub','Bank transfer. Tap to copy, then paste into your banking app.'));
+    app.appendChild(el('p','sub','Pay by bank transfer. Tap a button to copy, then paste it into your banking app.'));
     app.appendChild(field('Account name',n,'Copy name'));
     app.appendChild(field('Account number',a,'Copy account number'));
     if(b)app.appendChild(field('Bank',b,'Copy bank'));
@@ -117,8 +117,8 @@
       app.appendChild(note);
     }
     var w=el('div','warn');
-    w.appendChild(el('strong',null,'Check before you send'));
-    w.appendChild(document.createTextNode('Make sure the account name matches who you’re paying. This page only shows what was typed into the link, and nobody has verified it. layzpay doesn\u2019t verify details or process payments.'));
+    w.appendChild(el('strong',null,'Before you pay'));
+    w.appendChild(document.createTextNode('Check that the account name matches who you mean to pay. If your bank says the name doesn\u2019t match, stop and ask the seller. This page doesn\u2019t take payments. You pay from your own banking app.'));
     app.appendChild(w);
   }
 
