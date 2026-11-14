@@ -37,16 +37,18 @@
     body{background:#fff;padding:0;color:#000}
     .wrap{display:none}
     #printArea{display:block}
-    .sheet{page-break-after:always;break-after:page;overflow:hidden;position:relative;background:#fff;color:#000;
+    .sheet{page-break-after:always;break-after:page;background:#fff;color:#000;box-sizing:border-box;width:100%;
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;text-align:center;
-      display:flex;flex-direction:column;align-items:center;justify-content:center}
+      padding-top:calc(var(--u)*20mm)}
     .sheet:last-child{page-break-after:auto;break-after:auto}
-    .sheet.a4{width:210mm;height:296mm;--u:1}
-    .sheet.a5{width:148mm;height:209mm;--u:.705}
+    #sheetBack{padding-top:calc(var(--u)*55mm)}
+    .sheet.a4{--u:1}
+    .sheet.a5{--u:.705}
+    .sheet > *{margin-left:auto;margin-right:auto}
     .sheet h1{font-size:calc(var(--u)*13mm);margin:0;font-weight:800;color:#000;max-width:90%;overflow-wrap:anywhere}
     .sheet .tagline{font-size:calc(var(--u)*6mm);color:#555;margin-top:calc(var(--u)*2mm);min-height:1em}
     .sheet .scanme{font-size:calc(var(--u)*22mm);font-weight:800;margin:calc(var(--u)*14mm) 0 calc(var(--u)*8mm)}
-    .sheet img.qr{width:calc(var(--u)*110mm);height:calc(var(--u)*110mm)}
+    .sheet img.qr{display:block;width:calc(var(--u)*110mm);height:calc(var(--u)*110mm)}
     .sheet .cta{font-size:calc(var(--u)*7mm);font-weight:700;margin-top:calc(var(--u)*10mm)}
     .sheet .sub{font-size:calc(var(--u)*4.6mm);color:#333;margin-top:calc(var(--u)*3mm);max-width:80%}
     .sheet .head{font-size:calc(var(--u)*6mm);letter-spacing:.12em;text-transform:uppercase;color:#333;margin-bottom:calc(var(--u)*14mm)}
@@ -55,7 +57,7 @@
     .sheet .back-note{font-size:calc(var(--u)*4.6mm);color:#333;margin-top:calc(var(--u)*16mm);max-width:75%}
   }
 </style>
-<style id="pagesize">@page{size:A4;margin:0}</style>
+<style id="pagesize">@page{size:A4;margin:10mm}</style>
 </head>
 <body>
 <script>
@@ -2484,7 +2486,7 @@ var qrcode = function() {
     $('pbRef').style.display=r?'':'none';
     var sz=f.size.value;
     $('sheetFront').className='sheet '+sz;$('sheetBack').className='sheet '+sz;
-    $('pagesize').textContent='@page{size:'+(sz==='a5'?'A5':'A4')+';margin:0}';
+    $('pagesize').textContent='@page{size:'+(sz==='a5'?'A5':'A4')+';margin:10mm}';
   }
 
   var timer=null;
