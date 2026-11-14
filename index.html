@@ -2440,6 +2440,7 @@ var qrcode = function() {
 
   function buildLink(){
     var p=new URLSearchParams();
+    p.set('v','1');
     if(f.t.value.trim())p.set('t',f.t.value.trim());
     if(f.n.value.trim())p.set('n',f.n.value.trim());
     if(f.a.value.trim())p.set('a',f.a.value.trim());
