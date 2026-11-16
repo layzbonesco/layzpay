@@ -53,13 +53,13 @@
     #printArea{display:block}
     .sheet{page-break-after:always;break-after:page;background:#fff;color:#000;box-sizing:border-box;width:100%;
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;text-align:center;
-      padding-top:calc(var(--u)*20mm)}
+      padding:calc(var(--u)*20mm) 12mm 0}
     .sheet:last-child{page-break-after:auto;break-after:auto}
     #sheetBack{padding-top:calc(var(--u)*55mm)}
     .sheet.a4{--u:1}
     .sheet.a5{--u:.705}
     .sheet > *{margin-left:auto;margin-right:auto}
-    .sheet h1{font-size:calc(var(--u)*13mm);margin:0;font-weight:800;color:#000;max-width:90%;overflow-wrap:anywhere}
+    .sheet h1{font-size:calc(var(--u)*13mm);margin:0 auto;font-weight:800;color:#000;max-width:90%;overflow-wrap:anywhere}
     .sheet .tagline{font-size:calc(var(--u)*6mm);color:#555;margin-top:calc(var(--u)*2mm);min-height:1em}
     .sheet .scanme{font-size:calc(var(--u)*22mm);font-weight:800;margin:calc(var(--u)*14mm) 0 calc(var(--u)*8mm)}
     .sheet img.qr{display:block;width:calc(var(--u)*110mm);height:calc(var(--u)*110mm)}
@@ -71,7 +71,7 @@
     .sheet .back-note{font-size:calc(var(--u)*4.6mm);color:#333;margin-top:calc(var(--u)*16mm);max-width:75%}
   }
 </style>
-<style id="pagesize">@page{size:A4;margin:10mm}</style>
+<style id="pagesize">@page{size:A4;margin:0}</style>
 </head>
 <body>
 <script>
@@ -2532,7 +2532,7 @@ var qrcode = function() {
     $('pbRef').style.display=r?'':'none';
     var sz=f.size.value;
     $('sheetFront').className='sheet '+sz;$('sheetBack').className='sheet '+sz;
-    $('pagesize').textContent='@page{size:'+(sz==='a5'?'A5':'A4')+';margin:10mm}';
+    $('pagesize').textContent='@page{size:'+(sz==='a5'?'A5':'A4')+';margin:0}';
   }
 
   var timer=null;
@@ -2563,6 +2563,9 @@ var qrcode = function() {
     },'image/png');
   });
 
+  var oldTitle=document.title;
+  window.addEventListener('beforeprint',function(){oldTitle=document.title;document.title=' ';});
+  window.addEventListener('afterprint',function(){document.title=oldTitle;});
   $('print').addEventListener('click',function(){
     if(!f.n.value.trim()||!f.a.value.trim()){alert('Fill in the account name and number first.');return;}
     drawQR(buildLink());updateSheets();
